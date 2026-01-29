@@ -4,8 +4,8 @@ export default function IsItRelayLogo({ className = "h-10 sm:h-12 md:h-14" }: { 
       href="https://relay.link?utm_source=waren.build&utm_medium=is-it-relay&utm_campaign=address-detector"
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-block hover:opacity-80 transition-opacity cursor-pointer"
-      aria-label="Visit Relay Protocol"
+      className="inline-block hover:opacity-80 transition-opacity"
+      aria-label="Visit Relay Protocol website"
     >
       <div className={`flex items-center gap-1.5 sm:gap-2 ${className}`}>
         {/* "Is It" text - sized to match the RELAY wordmark within the SVG */}
