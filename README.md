@@ -92,4 +92,4 @@ src/
 
 ## License
 
-MIT © [Waren Gonzaga](https://github.com/warengonzaga)
+GPL-3.0 © [Waren Gonzaga](https://github.com/warengonzaga)
