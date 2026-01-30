@@ -13,11 +13,6 @@ const faqs = [
     answer:
       "Simply enter any EVM (0x...) or Solana (base58) wallet address. The app fetches all chains from Relay Protocol API and checks if your address matches any solver addresses or v2 depository contracts. Results show match type, matched chains, and explorer links.",
   },
-  {
-    question: "Why is there no 'Connect Wallet' button?",
-    answer:
-      "There's no need to connect your wallet. Blockchain data is public, so you can check addresses directly from the Relay Protocol API. This keeps things simple and safe. No wallet connection required!",
-  },
 ];
 
 export default function FAQ() {
