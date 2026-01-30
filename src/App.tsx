@@ -3,6 +3,7 @@ import AddressInput from '@/components/AddressInput';
 import DetectionResult from '@/components/DetectionResult';
 import IsItRelayLogo from '@/components/IsItRelayLogo';
 import Footer from '@/components/Footer';
+import FAQ from '@/components/FAQ';
 import { detectRelayAddress } from '@/services/relayApi';
 import type { DetectionResult as DetectionResultType } from '@/types/relay';
 
@@ -102,6 +103,9 @@ function App() {
         {result && !isLoading && (
           <DetectionResult result={result} onReset={handleReset} />
         )}
+
+        {/* FAQ - shown only when not loading and no result */}
+        {!isLoading && !result && <FAQ />}
 
       </div>
       <Footer />
