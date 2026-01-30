@@ -2,7 +2,7 @@ import { Star, Bug, GitPullRequest, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Footer() {
-  const version = '0.1.0';
+  const version = '0.2.0';
   const repoUrl = 'https://github.com/warengonzaga/is-it-relay';
 
   return (
