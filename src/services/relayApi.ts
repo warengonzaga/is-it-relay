@@ -11,8 +11,26 @@ export function isValidSolanaAddress(address: string): boolean {
   return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address);
 }
 
+export function isValidBitcoinAddress(address: string): boolean {
+  // Legacy P2PKH (starts with 1)
+  const legacyP2PKH = /^1[1-9A-HJ-NP-Za-km-z]{24,33}$/;
+  // Script P2SH (starts with 3)
+  const scriptP2SH = /^3[1-9A-HJ-NP-Za-km-z]{24,33}$/;
+  // Native SegWit Bech32 (starts with bc1q)
+  const nativeSegWit = /^bc1q[a-z0-9]{38,58}$/;
+  // Taproot Bech32m (starts with bc1p)
+  const taproot = /^bc1p[a-z0-9]{58}$/;
+
+  return (
+    legacyP2PKH.test(address) ||
+    scriptP2SH.test(address) ||
+    nativeSegWit.test(address) ||
+    taproot.test(address)
+  );
+}
+
 export function isValidAddress(address: string): boolean {
-  return isValidEthereumAddress(address) || isValidSolanaAddress(address);
+  return isValidEthereumAddress(address) || isValidSolanaAddress(address) || isValidBitcoinAddress(address);
 }
 
 export async function fetchChains(): Promise<RelayChain[]> {
@@ -21,10 +39,10 @@ export async function fetchChains(): Promise<RelayChain[]> {
 }
 
 function addressesMatch(a: string, b: string, vmType: string): boolean {
-  if (vmType === 'svm') {
-    return a === b;
+  if (vmType === 'svm' || vmType === 'bvm') {
+    return a === b; // Case-sensitive for Solana and Bitcoin
   }
-  return a.toLowerCase() === b.toLowerCase();
+  return a.toLowerCase() === b.toLowerCase(); // Case-insensitive for EVM
 }
 
 /**
