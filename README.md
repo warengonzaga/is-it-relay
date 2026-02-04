@@ -8,7 +8,7 @@ A web app to detect if an address is part of [Relay Protocol](https://relay.link
 
 - **Address Detection** — Identifies solver addresses, depository contracts, and protocol contracts (multicall, routers, receivers, etc.) from the Relay Protocol API.
 - **Multi-chain Support** — Scans across all chains returned by the `/chains` endpoint.
-- **EVM & SVM** — Supports both EVM (`0x...`) and Solana (base58) addresses.
+- **EVM, SVM & BTC** — Supports EVM (`0x...`), Solana (base58), and Bitcoin (Legacy, SegWit, Taproot) addresses.
 - **Detection Summary** — Shows match type (solver, depository, contract) with per-chain breakdown.
 - **Collapsible Chain Lists** — Matches grouped by type with expandable details.
 - **Block Explorer Links** — Direct links to view the address on each chain's explorer.
@@ -61,13 +61,13 @@ pnpm preview
 
 ## How It Works
 
-1. User enters an EVM or Solana address.
+1. User enters an EVM, Solana, or Bitcoin address.
 2. The app fetches all chains from `https://api.relay.link/chains`.
 3. For each chain, it checks:
    - `solverAddresses[]` — solver addresses
    - `protocol.v2.depository` — v2 depository contract address
    - `contracts.*` — protocol contracts (multicall3, erc20Router, relayReceiver, etc.)
-4. Matching uses case-insensitive comparison for EVM and exact match for SVM (base58 is case-sensitive).
+4. Matching uses case-insensitive comparison for EVM and exact match for SVM/BTC (base58/bech32 is case-sensitive).
 5. Results display the match type, matched chains, and explorer links.
 
 ## Project Structure

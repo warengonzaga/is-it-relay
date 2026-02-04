@@ -6,12 +6,12 @@ const faqs = [
   {
     question: "What is Is It Relay?",
     answer:
-      "Is It Relay is an independent community tool to quickly detect if an address belongs to Relay Protocol infrastructure. It checks solver addresses, depository contracts, and protocol contracts (multicall, routers, receivers, etc.) across all supported chains.",
+      "Is It Relay is an independent community tool to quickly detect if an address belongs to Relay Protocol infrastructure. It checks solver addresses, depository contracts, and protocol contracts (multicall, routers, receivers, etc.) across all supported chains including EVM, Solana, and Bitcoin.",
   },
   {
     question: "How does it work?",
     answer:
-      "Simply enter any EVM (0x...) or Solana (base58) address. The app fetches all chains from Relay Protocol API and checks if your address matches any solver addresses, depository contracts, or protocol contracts. Results show match type, matched chains, and explorer links.",
+      "Simply enter any EVM (0x...), Solana (base58), or Bitcoin (bc1..., 1..., 3...) address. The app fetches all chains from Relay Protocol API and checks if your address matches any solver addresses, depository contracts, or protocol contracts. Results show match type, matched chains, and explorer links.",
   },
 ];
 

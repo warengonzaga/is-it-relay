@@ -25,7 +25,7 @@ export default function AddressInput({ onDetect, isLoading }: AddressInputProps)
     }
 
     if (!isValidAddress(trimmed)) {
-      setError('Invalid address format. Enter an EVM address (0x...) or a Solana address.');
+      setError('Invalid address format. Enter an EVM (0x...), Solana, or Bitcoin address.');
       return;
     }
 
@@ -50,7 +50,7 @@ export default function AddressInput({ onDetect, isLoading }: AddressInputProps)
             </CardTitle>
           </div>
           <CardDescription className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-            Enter an EVM or Solana address to check if it's part of Relay Protocol infrastructure. Detects solver addresses, depository contracts, and protocol contracts across all supported chains.
+            Enter an EVM, Solana, or Bitcoin address to check if it's part of Relay Protocol infrastructure. Detects solver addresses, depository contracts, and protocol contracts across all supported chains.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -58,7 +58,7 @@ export default function AddressInput({ onDetect, isLoading }: AddressInputProps)
             <div className="space-y-2">
               <label htmlFor="address-input" className="text-xs sm:text-sm font-semibold text-foreground/90 flex items-center gap-2">
                 Address
-                <span className="text-xs font-normal text-muted-foreground">(EVM &amp; SVM)</span>
+                <span className="text-xs font-normal text-muted-foreground">(EVM, SVM &amp; BTC)</span>
               </label>
               <div className="relative">
                 <Input
@@ -66,7 +66,7 @@ export default function AddressInput({ onDetect, isLoading }: AddressInputProps)
                   type="text"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  placeholder="0x... or Solana address"
+                  placeholder="0x..., Solana, or Bitcoin address"
                   disabled={isLoading}
                   className="font-mono text-xs sm:text-sm h-11 sm:h-12 bg-background/50 border-2 focus:border-primary transition-colors pr-12"
                 />
