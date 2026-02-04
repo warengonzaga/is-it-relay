@@ -1,19 +1,19 @@
 # Is It Relay?
 
-A web app to detect if a wallet address is part of [Relay Protocol](https://relay.link) infrastructure. Checks solver addresses and v2 depository contracts across all supported chains.
+A web app to detect if an address is part of [Relay Protocol](https://relay.link) infrastructure. Checks solver addresses, depository contracts, and protocol contracts across all supported chains.
 
 [![Deploy to GitHub Pages](https://github.com/warengonzaga/is-it-relay/actions/workflows/deploy.yml/badge.svg)](https://github.com/warengonzaga/is-it-relay/actions/workflows/deploy.yml)
 
 ## Features
 
-- **Address Detection** — Identifies solver addresses and v2 depository contracts from the Relay Protocol API.
+- **Address Detection** — Identifies solver addresses, depository contracts, and protocol contracts (multicall, routers, receivers, etc.) from the Relay Protocol API.
 - **Multi-chain Support** — Scans across all chains returned by the `/chains` endpoint.
 - **EVM & SVM** — Supports both EVM (`0x...`) and Solana (base58) addresses.
-- **Detection Summary** — Shows match type (solver, depository, or both) with per-chain breakdown.
-- **Collapsible Chain Lists** — Solver and depository matches grouped separately with expandable details.
+- **Detection Summary** — Shows match type (solver, depository, contract) with per-chain breakdown.
+- **Collapsible Chain Lists** — Matches grouped by type with expandable details.
 - **Block Explorer Links** — Direct links to view the address on each chain's explorer.
 - **Shareable URLs** — Results are linkable via `?address=` query parameter.
-- **Wallet Privacy** — Address visibility toggle with truncated display by default.
+- **Privacy Toggle** — Address visibility toggle with truncated display by default.
 - **Pixel Avatars** — Unique pixel-based avatars generated per address.
 
 ## Tech Stack
@@ -61,11 +61,12 @@ pnpm preview
 
 ## How It Works
 
-1. User enters an EVM or Solana wallet address.
+1. User enters an EVM or Solana address.
 2. The app fetches all chains from `https://api.relay.link/chains`.
 3. For each chain, it checks:
-   - `solverAddresses[]` — solver wallet addresses
+   - `solverAddresses[]` — solver addresses
    - `protocol.v2.depository` — v2 depository contract address
+   - `contracts.*` — protocol contracts (multicall3, erc20Router, relayReceiver, etc.)
 4. Matching uses case-insensitive comparison for EVM and exact match for SVM (base58 is case-sensitive).
 5. Results display the match type, matched chains, and explorer links.
 
