@@ -20,7 +20,7 @@ export default function AddressInput({ onDetect, isLoading }: AddressInputProps)
 
     const trimmed = address.trim();
     if (!trimmed) {
-      setError('Please enter a wallet address');
+      setError('Please enter an address');
       return;
     }
 
@@ -50,19 +50,19 @@ export default function AddressInput({ onDetect, isLoading }: AddressInputProps)
             </CardTitle>
           </div>
           <CardDescription className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-            Enter an EVM or Solana wallet address to check if it's part of Relay Protocol infrastructure. Detects solver addresses and v2 depository contracts across all supported chains.
+            Enter an EVM or Solana address to check if it's part of Relay Protocol infrastructure. Detects solver addresses, depository contracts, and protocol contracts across all supported chains.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
             <div className="space-y-2">
-              <label htmlFor="wallet-address" className="text-xs sm:text-sm font-semibold text-foreground/90 flex items-center gap-2">
-                Wallet Address
+              <label htmlFor="address-input" className="text-xs sm:text-sm font-semibold text-foreground/90 flex items-center gap-2">
+                Address
                 <span className="text-xs font-normal text-muted-foreground">(EVM &amp; SVM)</span>
               </label>
               <div className="relative">
                 <Input
-                  id="wallet-address"
+                  id="address-input"
                   type="text"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
