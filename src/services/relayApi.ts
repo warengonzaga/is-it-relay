@@ -27,6 +27,30 @@ function addressesMatch(a: string, b: string, vmType: string): boolean {
   return a.toLowerCase() === b.toLowerCase();
 }
 
+/**
+ * Flattens a nested contracts object into an array of [path, address] pairs.
+ * Example: { multicall3: "0x...", v3: { erc20Router: "0x..." } }
+ * Returns: [["multicall3", "0x..."], ["v3.erc20Router", "0x..."]]
+ */
+function flattenContracts(
+  contracts: Record<string, unknown>,
+  prefix: string = ''
+): Array<[string, string]> {
+  const result: Array<[string, string]> = [];
+
+  for (const [key, value] of Object.entries(contracts)) {
+    const path = prefix ? `${prefix}.${key}` : key;
+
+    if (typeof value === 'string') {
+      result.push([path, value]);
+    } else if (typeof value === 'object' && value !== null) {
+      result.push(...flattenContracts(value as Record<string, unknown>, path));
+    }
+  }
+
+  return result;
+}
+
 export async function detectRelayAddress(address: string): Promise<DetectionResult> {
   const chains = await fetchChains();
   const matches: AddressMatch[] = [];
@@ -61,6 +85,25 @@ export async function detectRelayAddress(address: string): Promise<DetectionResu
           matchType: 'depository',
           address: chain.protocol.v2.depository,
         });
+      }
+    }
+
+    // Check contracts
+    if (chain.contracts) {
+      const flattenedContracts = flattenContracts(chain.contracts);
+      for (const [contractType, contractAddress] of flattenedContracts) {
+        if (addressesMatch(contractAddress, address, chain.vmType)) {
+          matches.push({
+            chainId: chain.id,
+            chainName: chain.name,
+            chainDisplayName: chain.displayName,
+            explorerUrl: chain.explorerUrl,
+            iconUrl: chain.iconUrl,
+            matchType: 'contract',
+            contractType,
+            address: contractAddress,
+          });
+        }
       }
     }
   }

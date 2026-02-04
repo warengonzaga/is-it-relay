@@ -7,6 +7,11 @@ export interface ChainProtocol {
   v2?: ChainProtocolV2;
 }
 
+// Contracts structure - supports nested objects like v3.erc20Router
+export interface ChainContracts {
+  [key: string]: string | { [key: string]: string };
+}
+
 export interface RelayChain {
   id: number;
   name: string;
@@ -16,17 +21,33 @@ export interface RelayChain {
   solverAddresses: string[];
   protocol?: ChainProtocol;
   vmType: string;
+  contracts?: ChainContracts;
 }
 
-export interface AddressMatch {
+// Base interface for all address matches
+export interface BaseAddressMatch {
   chainId: number;
   chainName: string;
   chainDisplayName: string;
   explorerUrl: string;
   iconUrl: string;
-  matchType: 'solver' | 'depository';
   address: string;
 }
+
+export interface SolverMatch extends BaseAddressMatch {
+  matchType: 'solver';
+}
+
+export interface DepositoryMatch extends BaseAddressMatch {
+  matchType: 'depository';
+}
+
+export interface ContractMatch extends BaseAddressMatch {
+  matchType: 'contract';
+  contractType: string;
+}
+
+export type AddressMatch = SolverMatch | DepositoryMatch | ContractMatch;
 
 export interface DetectionResult {
   isRelay: boolean;
