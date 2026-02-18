@@ -7,6 +7,7 @@ A web app to detect if an address is part of [Relay Protocol](https://relay.link
 ## Features
 
 - **Address Detection** — Identifies solver addresses, depository contracts, and protocol contracts (multicall, routers, receivers, etc.) from the Relay Protocol API.
+- **Batch Processing** — Check multiple addresses at once by pasting comma, newline, or space-separated lists.
 - **Multi-chain Support** — Scans across all chains returned by the `/chains` endpoint.
 - **EVM, SVM & BTC** — Supports EVM (`0x...`), Solana (base58), and Bitcoin (Legacy, SegWit, Taproot) addresses.
 - **Detection Summary** — Shows match type (solver, depository, contract) with per-chain breakdown.
@@ -61,7 +62,7 @@ pnpm preview
 
 ## How It Works
 
-1. User enters an EVM, Solana, or Bitcoin address.
+1. User enters one or multiple EVM, Solana, or Bitcoin addresses (comma, newline, or space-separated).
 2. The app fetches all chains from `https://api.relay.link/chains`.
 3. For each chain, it checks:
    - `solverAddresses[]` — solver addresses
@@ -69,15 +70,17 @@ pnpm preview
    - `contracts.*` — protocol contracts (multicall3, erc20Router, relayReceiver, etc.)
 4. Matching uses case-insensitive comparison for EVM and exact match for SVM/BTC (base58/bech32 is case-sensitive).
 5. Results display the match type, matched chains, and explorer links.
+6. For batch processing, results are organized by Relay and Non-Relay addresses with summary statistics.
 
 ## Project Structure
 
 ```
 src/
 ├── components/
-│   ├── ui/              # Reusable UI primitives (Button, Card, Input)
+│   ├── ui/              # Reusable UI primitives (Button, Card, Input, Textarea)
 │   ├── AddressInput.tsx  # Address input form with validation
 │   ├── DetectionResult.tsx # Result display with chain details
+│   ├── BatchDetectionResult.tsx # Batch results display with summary
 │   ├── Footer.tsx        # Footer with repo links
 │   └── IsItRelayLogo.tsx # Custom logo component
 ├── services/
