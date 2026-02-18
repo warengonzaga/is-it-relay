@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import AddressInput from '@/components/AddressInput';
 import DetectionResult from '@/components/DetectionResult';
+import BatchDetectionResult from '@/components/BatchDetectionResult';
 import IsItRelayLogo from '@/components/IsItRelayLogo';
 import Footer from '@/components/Footer';
 import FAQ from '@/components/FAQ';
-import { detectRelayAddress } from '@/services/relayApi';
-import type { DetectionResult as DetectionResultType } from '@/types/relay';
+import { detectRelayAddress, detectMultipleAddresses } from '@/services/relayApi';
+import type { DetectionResult as DetectionResultType, BatchDetectionResult as BatchDetectionResultType } from '@/types/relay';
 
 function App() {
   const [result, setResult] = useState<DetectionResultType | null>(null);
+  const [batchResult, setBatchResult] = useState<BatchDetectionResultType | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,6 +27,7 @@ function App() {
     setIsLoading(true);
     setError(null);
     setResult(null);
+    setBatchResult(null);
 
     // Update URL
     const url = new URL(window.location.href);
@@ -41,8 +44,30 @@ function App() {
     }
   };
 
+  const handleDetectMultiple = async (addresses: string[]) => {
+    setIsLoading(true);
+    setError(null);
+    setResult(null);
+    setBatchResult(null);
+
+    // Clear URL params for batch detection
+    const url = new URL(window.location.href);
+    url.searchParams.delete('address');
+    window.history.replaceState({}, '', url.toString());
+
+    try {
+      const batchDetectionResult = await detectMultipleAddresses(addresses);
+      setBatchResult(batchDetectionResult);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to check addresses. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleReset = () => {
     setResult(null);
+    setBatchResult(null);
     setError(null);
 
     // Clear URL params
@@ -65,8 +90,8 @@ function App() {
         </header>
 
         {/* Main Content */}
-        {!result && (
-          <AddressInput onDetect={handleDetect} isLoading={isLoading} />
+        {!result && !batchResult && (
+          <AddressInput onDetect={handleDetect} onDetectMultiple={handleDetectMultiple} isLoading={isLoading} />
         )}
 
         {/* Loading State */}
@@ -104,8 +129,13 @@ function App() {
           <DetectionResult result={result} onReset={handleReset} />
         )}
 
+        {/* Batch Result */}
+        {batchResult && !isLoading && (
+          <BatchDetectionResult batchResult={batchResult} onReset={handleReset} />
+        )}
+
         {/* FAQ - shown only when not loading and no result */}
-        {!isLoading && !result && <FAQ />}
+        {!isLoading && !result && !batchResult && <FAQ />}
 
       </div>
       <Footer />

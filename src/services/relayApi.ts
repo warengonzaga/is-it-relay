@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { RelayChain, DetectionResult, AddressMatch } from '@/types/relay';
+import type { RelayChain, DetectionResult, AddressMatch, BatchDetectionResult } from '@/types/relay';
 
 const RELAY_API_BASE = 'https://api.relay.link';
 
@@ -130,5 +130,50 @@ export async function detectRelayAddress(address: string): Promise<DetectionResu
     isRelay: matches.length > 0,
     address,
     matches,
+  };
+}
+
+/**
+ * Parse multiple addresses from a string using various delimiters (comma, newline, space)
+ */
+export function parseMultipleAddresses(input: string): string[] {
+  // Split by comma, newline, or space and trim each address
+  const addresses = input
+    .split(/[\s,\n]+/)
+    .map(addr => addr.trim())
+    .filter(addr => addr.length > 0);
+  
+  // Remove duplicates by using Set
+  return [...new Set(addresses)];
+}
+
+/**
+ * Detect multiple addresses in batch
+ */
+export async function detectMultipleAddresses(addresses: string[]): Promise<BatchDetectionResult> {
+  const validAddresses: string[] = [];
+  const invalidAddresses: string[] = [];
+  
+  // Validate all addresses first
+  for (const address of addresses) {
+    if (isValidAddress(address)) {
+      validAddresses.push(address);
+    } else {
+      invalidAddresses.push(address);
+    }
+  }
+  
+  // Detect valid addresses
+  const results: DetectionResult[] = [];
+  for (const address of validAddresses) {
+    const result = await detectRelayAddress(address);
+    results.push(result);
+  }
+  
+  return {
+    results,
+    totalAddresses: addresses.length,
+    validAddresses: validAddresses.length,
+    invalidAddresses,
   };
 }

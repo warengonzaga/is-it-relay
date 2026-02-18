@@ -1,16 +1,17 @@
 import { useState } from 'react';
-import { isValidAddress } from '@/services/relayApi';
-import { Input } from '@/components/ui/input';
+import { isValidAddress, parseMultipleAddresses } from '@/services/relayApi';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, Sparkles } from 'lucide-react';
 
 interface AddressInputProps {
   onDetect: (address: string) => void;
+  onDetectMultiple: (addresses: string[]) => void;
   isLoading: boolean;
 }
 
-export default function AddressInput({ onDetect, isLoading }: AddressInputProps) {
+export default function AddressInput({ onDetect, onDetectMultiple, isLoading }: AddressInputProps) {
   const [address, setAddress] = useState('');
   const [error, setError] = useState('');
 
@@ -24,12 +25,29 @@ export default function AddressInput({ onDetect, isLoading }: AddressInputProps)
       return;
     }
 
-    if (!isValidAddress(trimmed)) {
-      setError('Invalid address format. Enter an EVM (0x...), Solana, or Bitcoin address.');
-      return;
+    // Check if input contains multiple addresses
+    const addresses = parseMultipleAddresses(trimmed);
+    
+    if (addresses.length > 1) {
+      // Validate all addresses
+      const invalidAddresses = addresses.filter(addr => !isValidAddress(addr));
+      
+      if (invalidAddresses.length > 0) {
+        setError(`Found ${invalidAddresses.length} invalid address(es). Please check your input.`);
+        return;
+      }
+      
+      // Batch detection
+      onDetectMultiple(addresses);
+    } else {
+      // Single address detection
+      if (!isValidAddress(trimmed)) {
+        setError('Invalid address format. Enter an EVM (0x...), Solana, or Bitcoin address.');
+        return;
+      }
+      
+      onDetect(trimmed);
     }
-
-    onDetect(trimmed);
   };
 
   return (
@@ -50,7 +68,7 @@ export default function AddressInput({ onDetect, isLoading }: AddressInputProps)
             </CardTitle>
           </div>
           <CardDescription className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-            Enter an EVM, Solana, or Bitcoin address to check if it's part of Relay Protocol infrastructure. Detects solver addresses, depository contracts, and protocol contracts across all supported chains.
+            Enter one or multiple EVM, Solana, or Bitcoin addresses (comma, newline, or space-separated) to check if they are part of Relay Protocol infrastructure. Detects solver addresses, depository contracts, and protocol contracts across all supported chains.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -61,16 +79,16 @@ export default function AddressInput({ onDetect, isLoading }: AddressInputProps)
                 <span className="text-xs font-normal text-muted-foreground">(EVM, SVM &amp; BTC)</span>
               </label>
               <div className="relative">
-                <Input
+                <Textarea
                   id="address-input"
-                  type="text"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  placeholder="0x..., Solana, or Bitcoin address"
+                  placeholder="0x..., Solana, or Bitcoin address (one or multiple, separated by comma, newline, or space)"
                   disabled={isLoading}
-                  className="font-mono text-xs sm:text-sm h-11 sm:h-12 bg-background/50 border-2 focus:border-primary transition-colors pr-12"
+                  className="font-mono text-xs sm:text-sm bg-background/50 border-2 focus:border-primary transition-colors resize-y min-h-[80px]"
+                  rows={3}
                 />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/40">
+                <div className="absolute right-3 top-3 text-muted-foreground/40">
                   <Sparkles className="h-4 w-4" />
                 </div>
               </div>
