@@ -89,8 +89,8 @@ export default function BatchDetectionResult({ batchResult, onReset }: BatchDete
             <CheckCircle2 className="h-5 w-5 text-green-500" />
             Relay Protocol Addresses ({relayAddresses.length})
           </h3>
-          {relayAddresses.map((result, idx) => (
-            <DetectionResult key={`relay-${idx}-${result.address}`} result={result} onReset={onReset} showResetButton={false} />
+          {relayAddresses.map((result) => (
+            <DetectionResult key={result.address} result={result} onReset={onReset} showResetButton={false} />
           ))}
         </div>
       )}
@@ -102,8 +102,8 @@ export default function BatchDetectionResult({ batchResult, onReset }: BatchDete
             <XCircle className="h-5 w-5 text-muted-foreground" />
             Not Relay Protocol Addresses ({nonRelayAddresses.length})
           </h3>
-          {nonRelayAddresses.map((result, idx) => (
-            <DetectionResult key={`non-relay-${idx}-${result.address}`} result={result} onReset={onReset} showResetButton={false} />
+          {nonRelayAddresses.map((result) => (
+            <DetectionResult key={result.address} result={result} onReset={onReset} showResetButton={false} />
           ))}
         </div>
       )}

@@ -69,8 +69,10 @@ function flattenContracts(
   return result;
 }
 
-export async function detectRelayAddress(address: string): Promise<DetectionResult> {
-  const chains = await fetchChains();
+/**
+ * Internal function to detect a single address against provided chains
+ */
+function detectAddressInChains(address: string, chains: RelayChain[]): DetectionResult {
   const matches: AddressMatch[] = [];
 
   for (const chain of chains) {
@@ -133,6 +135,11 @@ export async function detectRelayAddress(address: string): Promise<DetectionResu
   };
 }
 
+export async function detectRelayAddress(address: string): Promise<DetectionResult> {
+  const chains = await fetchChains();
+  return detectAddressInChains(address, chains);
+}
+
 /**
  * Parse multiple addresses from a string using various delimiters (comma, newline, space)
  */
@@ -149,12 +156,16 @@ export function parseMultipleAddresses(input: string): string[] {
 
 /**
  * Detect multiple addresses in batch
+ * Note: Assumes addresses are already validated by the caller (AddressInput component)
  */
 export async function detectMultipleAddresses(addresses: string[]): Promise<BatchDetectionResult> {
+  // Fetch chains once for all addresses to avoid redundant API calls
+  const chains = await fetchChains();
+  
   const validAddresses: string[] = [];
   const invalidAddresses: string[] = [];
   
-  // Validate all addresses first
+  // Validate all addresses (defensive check, though caller should validate)
   for (const address of addresses) {
     if (isValidAddress(address)) {
       validAddresses.push(address);
@@ -163,10 +174,10 @@ export async function detectMultipleAddresses(addresses: string[]): Promise<Batc
     }
   }
   
-  // Detect valid addresses
+  // Detect valid addresses using the same chains data
   const results: DetectionResult[] = [];
   for (const address of validAddresses) {
-    const result = await detectRelayAddress(address);
+    const result = detectAddressInChains(address, chains);
     results.push(result);
   }
   
