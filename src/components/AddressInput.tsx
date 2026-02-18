@@ -40,13 +40,14 @@ export default function AddressInput({ onDetect, onDetectMultiple, isLoading }: 
       // Batch detection
       onDetectMultiple(addresses);
     } else {
-      // Single address detection
-      if (!isValidAddress(trimmed)) {
+      // Single address detection (use the parsed address)
+      const singleAddress = addresses[0];
+      if (!isValidAddress(singleAddress)) {
         setError('Invalid address format. Enter an EVM (0x...), Solana, or Bitcoin address.');
         return;
       }
       
-      onDetect(trimmed);
+      onDetect(singleAddress);
     }
   };
 
