@@ -141,10 +141,22 @@ export async function detectRelayAddress(address: string): Promise<DetectionResu
 }
 
 /**
- * Parse multiple addresses from a string using various delimiters (comma, newline, space)
+ * Parse multiple addresses from a string using various delimiters
+ * 
+ * Handles edge cases including:
+ * - Comma-separated without spaces: "0x123,0x456,0x789"
+ * - Comma-separated with spaces: "0x123, 0x456, 0x789"
+ * - Newline-separated: "0x123\n0x456\n0x789"
+ * - Space-separated: "0x123 0x456 0x789"
+ * - Mixed delimiters: "0x123,0x456\n0x789 0xabc"
+ * - Extra whitespace/commas: "0x123,,  0x456,\n\n0x789"
+ * 
+ * @param input - Raw input string containing one or more addresses
+ * @returns Array of unique, trimmed addresses
  */
 export function parseMultipleAddresses(input: string): string[] {
-  // Split by comma, newline, or space and trim each address
+  // Split by comma, newline, or space (handles all combinations)
+  // The regex /[\s,\n]+/ matches one or more of: space, comma, or newline
   const addresses = input
     .split(/[\s,\n]+/)
     .map(addr => addr.trim())
