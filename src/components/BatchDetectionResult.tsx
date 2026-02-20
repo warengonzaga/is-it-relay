@@ -71,7 +71,7 @@ export default function BatchDetectionResult({ batchResult, onReset }: BatchDete
                 </p>
                 <div className="mt-2 space-y-1">
                   {batchResult.invalidAddresses.map((addr, idx) => (
-                    <p key={idx} className="text-xs font-mono text-destructive/90 break-all">
+                    <p key={`${addr}-${idx}`} className="text-xs font-mono text-destructive/90 break-all">
                       • {addr}
                     </p>
                   ))}
