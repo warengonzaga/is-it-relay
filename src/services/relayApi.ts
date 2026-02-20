@@ -155,10 +155,11 @@ export async function detectRelayAddress(address: string): Promise<DetectionResu
  * @returns Array of unique, trimmed addresses
  */
 export function parseMultipleAddresses(input: string): string[] {
-  // Split by comma, newline, or space (handles all combinations)
-  // The regex /[\s,\n]+/ matches one or more of: space, comma, or newline
+  // Split by comma or any whitespace (spaces, tabs, newlines)
+  // The regex /[\s,]+/ matches one or more of: comma or any whitespace character
+  // Note: \s already includes newlines, spaces, tabs, etc.
   const addresses = input
-    .split(/[\s,\n]+/)
+    .split(/[\s,]+/)
     .map(addr => addr.trim())
     .filter(addr => addr.length > 0);
   
@@ -196,7 +197,7 @@ export async function detectMultipleAddresses(addresses: string[]): Promise<Batc
   return {
     results,
     totalAddresses: addresses.length,
-    validAddresses: validAddresses.length,
+    validAddressCount: validAddresses.length,
     invalidAddresses,
   };
 }

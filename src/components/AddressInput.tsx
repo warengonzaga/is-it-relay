@@ -28,12 +28,20 @@ export default function AddressInput({ onDetect, onDetectMultiple, isLoading }: 
     // Check if input contains multiple addresses
     const addresses = parseMultipleAddresses(trimmed);
     
+    // Handle empty result (only delimiters, no valid content)
+    if (addresses.length === 0) {
+      setError('Please enter at least one address');
+      return;
+    }
+    
     if (addresses.length > 1) {
       // Validate all addresses
       const invalidAddresses = addresses.filter(addr => !isValidAddress(addr));
       
       if (invalidAddresses.length > 0) {
-        setError(`Found ${invalidAddresses.length} invalid address(es). Please check your input.`);
+        const invalidCount = invalidAddresses.length;
+        const invalidLabel = invalidCount === 1 ? 'address' : 'addresses';
+        setError(`Found ${invalidCount} invalid ${invalidLabel}. Please check your input.`);
         return;
       }
       

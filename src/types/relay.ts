@@ -58,6 +58,6 @@ export interface DetectionResult {
 export interface BatchDetectionResult {
   results: DetectionResult[];
   totalAddresses: number;
-  validAddresses: number;
+  validAddressCount: number;
   invalidAddresses: string[];
 }
