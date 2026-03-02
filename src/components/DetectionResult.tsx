@@ -34,9 +34,10 @@ const formatContractType = (contractType: string): string => {
 interface DetectionResultProps {
   result: DetectionResultType;
   onReset: () => void;
+  showResetButton?: boolean;
 }
 
-export default function DetectionResult({ result, onReset }: DetectionResultProps) {
+export default function DetectionResult({ result, onReset, showResetButton = true }: DetectionResultProps) {
   const [copied, setCopied] = useState(false);
   const [shared, setShared] = useState(false);
   const [isAddressVisible, setIsAddressVisible] = useState(false);
@@ -177,10 +178,12 @@ export default function DetectionResult({ result, onReset }: DetectionResultProp
               <><Share2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5" /><span className="text-xs sm:text-sm">Share</span></>
             )}
           </Button>
-          <Button variant="default" size="sm" onClick={onReset} className="ml-auto">
-            <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5" />
-            <span className="text-xs sm:text-sm">Check Another</span>
-          </Button>
+          {showResetButton && (
+            <Button variant="default" size="sm" onClick={onReset} className="ml-auto">
+              <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5" />
+              <span className="text-xs sm:text-sm">Check Another</span>
+            </Button>
+          )}
         </div>
       </div>
 

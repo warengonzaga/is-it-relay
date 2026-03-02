@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { RelayChain, DetectionResult, AddressMatch } from '@/types/relay';
+import type { RelayChain, DetectionResult, AddressMatch, BatchDetectionResult } from '@/types/relay';
 
 const RELAY_API_BASE = 'https://api.relay.link';
 
@@ -69,8 +69,10 @@ function flattenContracts(
   return result;
 }
 
-export async function detectRelayAddress(address: string): Promise<DetectionResult> {
-  const chains = await fetchChains();
+/**
+ * Internal function to detect a single address against provided chains
+ */
+function detectAddressInChains(address: string, chains: RelayChain[]): DetectionResult {
   const matches: AddressMatch[] = [];
 
   for (const chain of chains) {
@@ -130,5 +132,72 @@ export async function detectRelayAddress(address: string): Promise<DetectionResu
     isRelay: matches.length > 0,
     address,
     matches,
+  };
+}
+
+export async function detectRelayAddress(address: string): Promise<DetectionResult> {
+  const chains = await fetchChains();
+  return detectAddressInChains(address, chains);
+}
+
+/**
+ * Parse multiple addresses from a string using various delimiters
+ * 
+ * Handles edge cases including:
+ * - Comma-separated without spaces: "0x123,0x456,0x789"
+ * - Comma-separated with spaces: "0x123, 0x456, 0x789"
+ * - Newline-separated: "0x123\n0x456\n0x789"
+ * - Space-separated: "0x123 0x456 0x789"
+ * - Mixed delimiters: "0x123,0x456\n0x789 0xabc"
+ * - Extra whitespace/commas: "0x123,,  0x456,\n\n0x789"
+ * 
+ * @param input - Raw input string containing one or more addresses
+ * @returns Array of unique, trimmed addresses
+ */
+export function parseMultipleAddresses(input: string): string[] {
+  // Split by comma or any whitespace (spaces, tabs, newlines)
+  // The regex /[\s,]+/ matches one or more of: comma or any whitespace character
+  // Note: \s already includes newlines, spaces, tabs, etc.
+  const addresses = input
+    .split(/[\s,]+/)
+    .map(addr => addr.trim())
+    .filter(addr => addr.length > 0);
+  
+  // Remove duplicates by using Set
+  return [...new Set(addresses)];
+}
+
+/**
+ * Detect multiple addresses in batch
+ * Note: Assumes addresses are already validated by the caller (AddressInput component)
+ */
+export async function detectMultipleAddresses(addresses: string[]): Promise<BatchDetectionResult> {
+  // Fetch chains once for all addresses to avoid redundant API calls
+  const chains = await fetchChains();
+  
+  const validAddresses: string[] = [];
+  const invalidAddresses: string[] = [];
+  
+  // Validate all addresses (defensive check, though caller should validate)
+  for (const address of addresses) {
+    if (isValidAddress(address)) {
+      validAddresses.push(address);
+    } else {
+      invalidAddresses.push(address);
+    }
+  }
+  
+  // Detect valid addresses using the same chains data
+  const results: DetectionResult[] = [];
+  for (const address of validAddresses) {
+    const result = detectAddressInChains(address, chains);
+    results.push(result);
+  }
+  
+  return {
+    results,
+    totalAddresses: addresses.length,
+    validAddressCount: validAddresses.length,
+    invalidAddresses,
   };
 }

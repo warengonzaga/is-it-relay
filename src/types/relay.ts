@@ -54,3 +54,10 @@ export interface DetectionResult {
   address: string;
   matches: AddressMatch[];
 }
+
+export interface BatchDetectionResult {
+  results: DetectionResult[];
+  totalAddresses: number;
+  validAddressCount: number;
+  invalidAddresses: string[];
+}
