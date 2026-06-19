@@ -5,7 +5,7 @@ const RELAY_API_BASE = 'https://api.relay.link';
 const RELAY_API_KEY = import.meta.env.VITE_RELAY_API_KEY;
 const relayApiClient = axios.create({
   baseURL: RELAY_API_BASE,
-  headers: RELAY_API_KEY ? { 'x-api-key': RELAY_API_KEY } : undefined,
+  ...(RELAY_API_KEY ? { headers: { 'x-api-key': RELAY_API_KEY } } : {}),
 });
 
 export function isValidEthereumAddress(address: string): boolean {
@@ -51,7 +51,7 @@ function addressesMatch(a: string, b: string, vmType: string): boolean {
 }
 
 function requestAddressesMatch(a: string, b: string): boolean {
-  if (isValidEthereumAddress(a) || isValidEthereumAddress(b)) {
+  if (isValidEthereumAddress(a) && isValidEthereumAddress(b)) {
     return a.toLowerCase() === b.toLowerCase();
   }
 
@@ -115,6 +115,10 @@ function mapRelayRequest(request: RelayRequestApiRecord): RelayRequestMetadata |
 }
 
 async function fetchDepositAddressMatches(address: string): Promise<AddressMatch[]> {
+  if (!address.trim()) {
+    return [];
+  }
+
   const response = await relayApiClient.get<RelayRequestsResponse>('/requests/v2', {
     params: {
       depositAddress: address,

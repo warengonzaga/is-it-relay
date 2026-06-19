@@ -117,6 +117,7 @@ export default function DetectionResult({ result, onReset, showResetButton = tru
 
     return `Relay Protocol ${types.join(' & ')} Address`;
   };
+  const depositRequestTitle = `Relay Deposit Request${depositAddressMatches.length !== 1 ? 's' : ''}`;
 
   return (
     <div className="w-full mx-auto space-y-4">
@@ -339,7 +340,7 @@ export default function DetectionResult({ result, onReset, showResetButton = tru
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Inbox className="h-4 w-4 text-primary" />
-                      <CardTitle className="text-sm sm:text-base">Relay Deposit Request</CardTitle>
+                      <CardTitle className="text-sm sm:text-base">{depositRequestTitle}</CardTitle>
                       <span className="text-sm sm:text-base text-muted-foreground font-normal">({depositAddressMatches.length} request{depositAddressMatches.length !== 1 ? 's' : ''})</span>
                     </div>
                     <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${depositAddressExpanded ? 'rotate-180' : ''}`} />
@@ -466,7 +467,7 @@ export default function DetectionResult({ result, onReset, showResetButton = tru
               </p>
               {result.depositAddressLookupUnavailable ? (
                 <p className="text-xs text-muted-foreground/70">
-                  Note: Relay deposit-address lookup could not be completed, so this result reflects only public Relay infrastructure metadata.
+                  Note: Relay deposit address lookup could not be completed, so this result reflects only public Relay infrastructure metadata.
                 </p>
               ) : (
                 <p className="text-xs text-muted-foreground/70">

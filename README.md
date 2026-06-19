@@ -42,7 +42,15 @@ cd is-it-relay
 pnpm install
 ```
 
+### Environment Variables
+
 Optional: set `VITE_RELAY_API_KEY` in your environment for higher Relay API rate limits when checking deposit-address requests.
+
+For local development, you can place it in a `.env` file:
+
+```bash
+VITE_RELAY_API_KEY=your-relay-api-key
+```
 
 ### Development
 
