@@ -47,12 +47,33 @@ export interface ContractMatch extends BaseAddressMatch {
   contractType: string;
 }
 
-export type AddressMatch = SolverMatch | DepositoryMatch | ContractMatch;
+export interface RelayRequestMetadata {
+  requestId: string;
+  status: string;
+  depositAddress: {
+    address: string;
+    depositAddressType?: string;
+    depositTxHash?: string | null;
+  };
+  protocolOrderId?: string;
+  originChainId?: number;
+  destinationChainId?: number;
+  childRequests?: RelayRequestMetadata[];
+}
+
+export interface DepositAddressMatch {
+  matchType: 'deposit-address';
+  address: string;
+  request: RelayRequestMetadata;
+}
+
+export type AddressMatch = SolverMatch | DepositoryMatch | ContractMatch | DepositAddressMatch;
 
 export interface DetectionResult {
   isRelay: boolean;
   address: string;
   matches: AddressMatch[];
+  depositAddressLookupUnavailable?: boolean;
 }
 
 export interface BatchDetectionResult {

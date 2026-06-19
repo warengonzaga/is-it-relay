@@ -11,7 +11,7 @@ interface BatchDetectionResultProps {
 
 export default function BatchDetectionResult({ batchResult, onReset }: BatchDetectionResultProps) {
   const relayAddresses = batchResult.results.filter(r => r.isRelay);
-  const nonRelayAddresses = batchResult.results.filter(r => !r.isRelay);
+  const nonDetectedAddresses = batchResult.results.filter(r => !r.isRelay);
 
   return (
     <div className="w-full mx-auto space-y-6">
@@ -52,8 +52,8 @@ export default function BatchDetectionResult({ batchResult, onReset }: BatchDete
                 <XCircle className="h-5 w-5 text-muted-foreground" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Not Relay</p>
-                <p className="text-xl font-bold">{nonRelayAddresses.length}</p>
+                <p className="text-xs text-muted-foreground">Not Detected</p>
+                <p className="text-xl font-bold">{nonDetectedAddresses.length}</p>
               </div>
             </div>
           </div>
@@ -95,14 +95,14 @@ export default function BatchDetectionResult({ batchResult, onReset }: BatchDete
         </div>
       )}
 
-      {/* Non-Relay Addresses */}
-      {nonRelayAddresses.length > 0 && (
+      {/* Non-Detected Addresses */}
+      {nonDetectedAddresses.length > 0 && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <XCircle className="h-5 w-5 text-muted-foreground" />
-            Not Relay Protocol Addresses ({nonRelayAddresses.length})
+            Not Detected as Relay Addresses ({nonDetectedAddresses.length})
           </h3>
-          {nonRelayAddresses.map((result) => (
+          {nonDetectedAddresses.map((result) => (
             <DetectionResult key={result.address} result={result} onReset={onReset} showResetButton={false} />
           ))}
         </div>

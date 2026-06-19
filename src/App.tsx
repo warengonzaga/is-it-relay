@@ -85,7 +85,7 @@ function App() {
             <IsItRelayLogo className="h-10 sm:h-12 md:h-14" />
           </div>
           <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto">
-            Detect if an address is part of Relay Protocol infrastructure
+            Detect if an address is part of Relay Protocol infrastructure or a Relay deposit-address request
           </p>
         </header>
 
