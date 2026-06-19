@@ -46,6 +46,9 @@ pnpm install
 
 Optional: set `VITE_RELAY_API_KEY` in your environment for higher Relay API rate limits when checking deposit-address requests.
 
+> [!WARNING]
+> `VITE_*` variables are embedded into the client bundle at build time and are publicly exposed in deployed builds. Do not treat `VITE_RELAY_API_KEY` as a secret or use a privileged server-only credential here.
+
 For local development, you can place it in a `.env` file:
 
 ```bash

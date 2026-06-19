@@ -8,6 +8,18 @@ const relayApiClient = axios.create({
   ...(RELAY_API_KEY ? { headers: { 'x-api-key': RELAY_API_KEY } } : {}),
 });
 
+function getRelayApiErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    return error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return 'Unknown error';
+}
+
 export function isValidEthereumAddress(address: string): boolean {
   return /^0x[a-fA-F0-9]{40}$/.test(address);
 }
@@ -244,7 +256,7 @@ export async function detectRelayAddress(address: string): Promise<DetectionResu
     depositAddressMatches = await fetchDepositAddressMatches(address);
   } catch (error) {
     depositAddressLookupUnavailable = true;
-    console.warn('Relay deposit address lookup failed:', error);
+    console.warn('Relay deposit address lookup failed:', getRelayApiErrorMessage(error));
   }
 
   const chainResult = detectAddressInChains(address, chains);
@@ -310,7 +322,7 @@ export async function detectMultipleAddresses(addresses: string[]): Promise<Batc
     try {
       depositAddressMatchesByAddress.push(await fetchDepositAddressMatches(address));
     } catch (error) {
-      console.warn(`Relay deposit address lookup failed for ${address}:`, error);
+      console.warn(`Relay deposit address lookup failed for ${address}:`, getRelayApiErrorMessage(error));
       depositAddressMatchesByAddress.push(null);
     }
   }
