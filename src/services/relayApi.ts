@@ -94,7 +94,9 @@ interface RelayRequestsResponse {
   requests?: RelayRequestApiRecord[];
 }
 
-function mapRelayRequest(request: RelayRequestApiRecord): RelayRequestMetadata | null {
+type MappedRelayRequest = RelayRequestMetadata;
+
+function mapRelayRequest(request: RelayRequestApiRecord): MappedRelayRequest | null {
   if (!request.depositAddress?.address) {
     return null;
   }
@@ -110,7 +112,7 @@ function mapRelayRequest(request: RelayRequestApiRecord): RelayRequestMetadata |
     protocolOrderId: request.protocol?.v2?.orderId,
     originChainId: request.originChainId ?? request.data?.metadata?.currencyIn?.currency?.chainId,
     destinationChainId: request.destinationChainId ?? request.data?.metadata?.currencyOut?.currency?.chainId,
-    childRequests: request.childRequests?.map(mapRelayRequest).filter((child): child is NonNullable<ReturnType<typeof mapRelayRequest>> => child !== null),
+    childRequests: request.childRequests?.map(mapRelayRequest).filter((child): child is MappedRelayRequest => child !== null),
   };
 }
 

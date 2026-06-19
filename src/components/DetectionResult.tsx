@@ -114,10 +114,8 @@ export default function DetectionResult({ result, onReset, showResetButton = tru
     if (depositoryMatches.length > 0) types.push('Depository');
     if (contractMatches.length > 0) types.push('Contract');
     if (depositAddressMatches.length > 0) types.push('Deposit Address');
-
     return `Relay Protocol ${types.join(' & ')} Address`;
   };
-  const depositRequestTitle = `Relay Deposit Request${depositAddressMatches.length !== 1 ? 's' : ''}`;
 
   return (
     <div className="w-full mx-auto space-y-4">
@@ -340,7 +338,7 @@ export default function DetectionResult({ result, onReset, showResetButton = tru
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Inbox className="h-4 w-4 text-primary" />
-                      <CardTitle className="text-sm sm:text-base">{depositRequestTitle}</CardTitle>
+                      <CardTitle className="text-sm sm:text-base">{`Relay Deposit Request${depositAddressMatches.length !== 1 ? 's' : ''}`}</CardTitle>
                       <span className="text-sm sm:text-base text-muted-foreground font-normal">({depositAddressMatches.length} request{depositAddressMatches.length !== 1 ? 's' : ''})</span>
                     </div>
                     <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${depositAddressExpanded ? 'rotate-180' : ''}`} />
