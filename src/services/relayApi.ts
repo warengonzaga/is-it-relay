@@ -122,15 +122,21 @@ async function fetchDepositAddressMatches(address: string): Promise<AddressMatch
     },
   });
 
-  return (response.data.requests ?? [])
-    .map((request) => mapRelayRequest(request))
-    .filter((request): request is NonNullable<ReturnType<typeof mapRelayRequest>> => request !== null)
-    .filter((request) => requestAddressesMatch(request.depositAddress.address, address))
-    .map((request) => ({
-      matchType: 'deposit-address' as const,
-      address: request.depositAddress.address,
-      request,
-    }));
+  return (response.data.requests ?? []).reduce<AddressMatch[]>((matches, request) => {
+    const mappedRequest = mapRelayRequest(request);
+
+    if (!mappedRequest || !requestAddressesMatch(mappedRequest.depositAddress.address, address)) {
+      return matches;
+    }
+
+    matches.push({
+      matchType: 'deposit-address',
+      address: mappedRequest.depositAddress.address,
+      request: mappedRequest,
+    });
+
+    return matches;
+  }, []);
 }
 
 /**
@@ -293,16 +299,15 @@ export async function detectMultipleAddresses(addresses: string[]): Promise<Batc
   }
   
   // Detect valid addresses using the same chains data
-  const depositAddressMatchesByAddress = await Promise.all(
-    validAddresses.map(async (address) => {
-      try {
-        return await fetchDepositAddressMatches(address);
-      } catch (error) {
-        console.warn(`Relay deposit address lookup failed for ${address}:`, error);
-        return null;
-      }
-    })
-  );
+  const depositAddressMatchesByAddress: Array<AddressMatch[] | null> = [];
+  for (const address of validAddresses) {
+    try {
+      depositAddressMatchesByAddress.push(await fetchDepositAddressMatches(address));
+    } catch (error) {
+      console.warn(`Relay deposit address lookup failed for ${address}:`, error);
+      depositAddressMatchesByAddress.push(null);
+    }
+  }
 
   const results: DetectionResult[] = [];
   for (const [index, address] of validAddresses.entries()) {

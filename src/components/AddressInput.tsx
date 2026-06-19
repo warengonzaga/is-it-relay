@@ -51,7 +51,7 @@ export default function AddressInput({ onDetect, onDetectMultiple, isLoading }: 
       // Single address detection (use the parsed address)
       const singleAddress = addresses[0];
       if (!isValidAddress(singleAddress)) {
-        setError('Invalid address format. Enter an EVM (0x...), Solana, or Bitcoin deposit address.');
+        setError('Invalid address format. Enter an EVM (0x...), Solana, or Bitcoin address.');
         return;
       }
       
