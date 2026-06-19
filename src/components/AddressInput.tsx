@@ -51,7 +51,7 @@ export default function AddressInput({ onDetect, onDetectMultiple, isLoading }: 
       // Single address detection (use the parsed address)
       const singleAddress = addresses[0];
       if (!isValidAddress(singleAddress)) {
-        setError('Invalid address format. Enter an EVM (0x...), Solana, or Bitcoin address.');
+        setError('Invalid address format. Enter an EVM (0x...), Solana, or Bitcoin deposit address.');
         return;
       }
       
@@ -77,7 +77,7 @@ export default function AddressInput({ onDetect, onDetectMultiple, isLoading }: 
             </CardTitle>
           </div>
           <CardDescription className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-            Enter one or multiple EVM, Solana, or Bitcoin addresses (comma, newline, or space-separated) to check if they are part of Relay Protocol infrastructure. Detects solver addresses, depository contracts, and protocol contracts across all supported chains.
+            Enter one or multiple EVM, Solana, or Bitcoin addresses (comma, newline, or space-separated) to check if they are part of Relay Protocol infrastructure or a Relay deposit-address flow. Detects solver addresses, depository contracts, protocol contracts, and matching Relay deposit requests.
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -1,4 +1,4 @@
-import type { DetectionResult as DetectionResultType, ContractMatch } from '@/types/relay';
+import type { DetectionResult as DetectionResultType, ContractMatch, DepositAddressMatch } from '@/types/relay';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, XCircle, ExternalLink, Copy, Check, RotateCcw, Eye, EyeOff, Share2, Shield, Database, ChevronDown, FileCode, Boxes, ArrowLeftRight, CheckSquare, Inbox, type LucideIcon } from 'lucide-react';
@@ -43,6 +43,7 @@ export default function DetectionResult({ result, onReset, showResetButton = tru
   const [isAddressVisible, setIsAddressVisible] = useState(false);
   const [solverExpanded, setSolverExpanded] = useState(false);
   const [depositoryExpanded, setDepositoryExpanded] = useState(false);
+  const [depositAddressExpanded, setDepositAddressExpanded] = useState(false);
   const [contractExpandedMap, setContractExpandedMap] = useState<Record<string, boolean>>({});
 
   const toggleContractSection = (contractType: string) => {
@@ -84,6 +85,9 @@ export default function DetectionResult({ result, onReset, showResetButton = tru
   const contractMatches = result.matches.filter(
     (m): m is ContractMatch => m.matchType === 'contract'
   );
+  const depositAddressMatches = result.matches.filter(
+    (m): m is DepositAddressMatch => m.matchType === 'deposit-address'
+  );
 
   // Group contract matches by contractType for display
   const contractMatchesByType = contractMatches.reduce<Record<string, ContractMatch[]>>(
@@ -109,6 +113,7 @@ export default function DetectionResult({ result, onReset, showResetButton = tru
     if (solverMatches.length > 0) types.push('Solver');
     if (depositoryMatches.length > 0) types.push('Depository');
     if (contractMatches.length > 0) types.push('Contract');
+    if (depositAddressMatches.length > 0) types.push('Deposit Address');
 
     return `Relay Protocol ${types.join(' & ')} Address`;
   };
@@ -207,7 +212,15 @@ export default function DetectionResult({ result, onReset, showResetButton = tru
                 {contractMatches.length > 0 && (
                   <> It is a <span className="text-primary font-semibold">protocol contract</span> ({sortedContractTypes.length} type{sortedContractTypes.length !== 1 ? 's' : ''}) on {new Set(contractMatches.map(m => m.chainId)).size} chain{new Set(contractMatches.map(m => m.chainId)).size !== 1 ? 's' : ''}.</>
                 )}
+                {depositAddressMatches.length > 0 && (
+                  <> It is associated with <span className="text-primary font-semibold">{depositAddressMatches.length}</span> Relay deposit request{depositAddressMatches.length !== 1 ? 's' : ''}.</>
+                )}
               </p>
+              {result.depositAddressLookupUnavailable && (
+                <p className="mt-3 text-xs text-muted-foreground/80">
+                  Relay deposit-address lookup is currently unavailable, so only public Relay infrastructure matches are shown.
+                </p>
+              )}
             </CardContent>
           </Card>
 
@@ -315,6 +328,77 @@ export default function DetectionResult({ result, onReset, showResetButton = tru
             </Card>
           )}
 
+          {/* Deposit Address Matches */}
+          {depositAddressMatches.length > 0 && (
+            <Card>
+              <button
+                onClick={() => setDepositAddressExpanded(!depositAddressExpanded)}
+                className="w-full text-left"
+              >
+                <CardHeader className="py-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Inbox className="h-4 w-4 text-primary" />
+                      <CardTitle className="text-sm sm:text-base">Deposit Address Request</CardTitle>
+                      <span className="text-sm sm:text-base text-muted-foreground font-normal">({depositAddressMatches.length} request{depositAddressMatches.length !== 1 ? 's' : ''})</span>
+                    </div>
+                    <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${depositAddressExpanded ? 'rotate-180' : ''}`} />
+                  </div>
+                </CardHeader>
+              </button>
+              {depositAddressExpanded && (
+                <CardContent>
+                  <div className="space-y-3">
+                    {depositAddressMatches.map((match) => (
+                      <div key={match.request.requestId} className="rounded-lg bg-muted/50 border border-border/50 p-3 space-y-2">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                          <p className="text-sm font-medium">Request ID: <span className="font-mono text-xs sm:text-sm">{match.request.requestId}</span></p>
+                          <p className="text-xs sm:text-sm text-muted-foreground">Status: <span className="text-foreground">{match.request.status}</span></p>
+                        </div>
+                        <div className="grid gap-1 text-xs sm:text-sm text-muted-foreground">
+                          <p>Deposit Address: <span className="font-mono text-foreground break-all">{match.request.depositAddress.address}</span></p>
+                          {match.request.depositAddress.depositAddressType && (
+                            <p>Type: <span className="text-foreground">{match.request.depositAddress.depositAddressType}</span></p>
+                          )}
+                          {match.request.depositAddress.depositTxHash && (
+                            <p>Deposit Tx: <span className="font-mono text-foreground break-all">{match.request.depositAddress.depositTxHash}</span></p>
+                          )}
+                          {match.request.protocolOrderId && (
+                            <p>Order ID: <span className="font-mono text-foreground break-all">{match.request.protocolOrderId}</span></p>
+                          )}
+                          {(match.request.originChainId || match.request.destinationChainId) && (
+                            <p>
+                              Route:{' '}
+                              <span className="text-foreground">
+                                {match.request.originChainId ?? 'Unknown'} → {match.request.destinationChainId ?? 'Unknown'}
+                              </span>
+                            </p>
+                          )}
+                        </div>
+                        {match.request.childRequests && match.request.childRequests.length > 0 && (
+                          <div className="border-t border-border/60 pt-2">
+                            <p className="text-xs font-semibold text-foreground mb-2">Child Requests</p>
+                            <div className="space-y-2">
+                              {match.request.childRequests.map((childRequest) => (
+                                <div key={childRequest.requestId} className="rounded-md border border-border/50 bg-background/40 p-2 text-xs sm:text-sm text-muted-foreground">
+                                  <p>Request ID: <span className="font-mono text-foreground break-all">{childRequest.requestId}</span></p>
+                                  <p>Status: <span className="text-foreground">{childRequest.status}</span></p>
+                                  {childRequest.protocolOrderId && (
+                                    <p>Order ID: <span className="font-mono text-foreground break-all">{childRequest.protocolOrderId}</span></p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+          )}
+
           {/* Contract Matches - one section per contract type */}
           {sortedContractTypes.map(contractType => {
             const IconComponent = getContractIcon(contractType);
@@ -378,11 +462,17 @@ export default function DetectionResult({ result, onReset, showResetButton = tru
           <CardContent className="pt-6">
             <div className="text-center space-y-2">
               <p className="text-sm text-muted-foreground">
-                This address was not found in any Relay Protocol solver addresses, depository contracts, or protocol contracts across all supported chains.
+                This address was not found in any known Relay Protocol solver addresses, depository contracts, protocol contracts, or matching Relay deposit-address requests.
               </p>
-              <p className="text-xs text-muted-foreground/70">
-                Note: This checks solver addresses, depository contracts, and protocol infrastructure contracts (multicall, routers, receivers, etc.) from the Relay Protocol API.
-              </p>
+              {result.depositAddressLookupUnavailable ? (
+                <p className="text-xs text-muted-foreground/70">
+                  Note: Relay deposit-address lookup is currently unavailable, so this result reflects only public Relay infrastructure metadata.
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground/70">
+                  Note: A missing deposit-address match means it was not detected in the current Relay Requests API response, not that the address is definitively unrelated to Relay.
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

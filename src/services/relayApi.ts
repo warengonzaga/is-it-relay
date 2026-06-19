@@ -1,7 +1,12 @@
 import axios from 'axios';
-import type { RelayChain, DetectionResult, AddressMatch, BatchDetectionResult } from '@/types/relay';
+import type { RelayChain, DetectionResult, AddressMatch, BatchDetectionResult, RelayRequestMetadata } from '@/types/relay';
 
 const RELAY_API_BASE = 'https://api.relay.link';
+const RELAY_API_KEY = import.meta.env.VITE_RELAY_API_KEY;
+const relayApiClient = axios.create({
+  baseURL: RELAY_API_BASE,
+  headers: RELAY_API_KEY ? { 'x-api-key': RELAY_API_KEY } : undefined,
+});
 
 export function isValidEthereumAddress(address: string): boolean {
   return /^0x[a-fA-F0-9]{40}$/.test(address);
@@ -34,7 +39,7 @@ export function isValidAddress(address: string): boolean {
 }
 
 export async function fetchChains(): Promise<RelayChain[]> {
-  const response = await axios.get<{ chains: RelayChain[] }>(`${RELAY_API_BASE}/chains`);
+  const response = await relayApiClient.get<{ chains: RelayChain[] }>('/chains');
   return response.data.chains ?? response.data as unknown as RelayChain[];
 }
 
@@ -43,6 +48,89 @@ function addressesMatch(a: string, b: string, vmType: string): boolean {
     return a === b; // Case-sensitive for Solana and Bitcoin
   }
   return a.toLowerCase() === b.toLowerCase(); // Case-insensitive for EVM
+}
+
+function requestAddressesMatch(a: string, b: string): boolean {
+  if (isValidEthereumAddress(a) || isValidEthereumAddress(b)) {
+    return a.toLowerCase() === b.toLowerCase();
+  }
+
+  return a === b;
+}
+
+interface RelayRequestApiRecord {
+  id: string;
+  status: string;
+  depositAddress?: {
+    address?: string;
+    depositAddressType?: string;
+    depositTxHash?: string | null;
+  } | null;
+  protocol?: {
+    v2?: {
+      orderId?: string;
+    };
+  } | null;
+  originChainId?: number;
+  destinationChainId?: number;
+  data?: {
+    metadata?: {
+      currencyIn?: {
+        currency?: {
+          chainId?: number;
+        };
+      };
+      currencyOut?: {
+        currency?: {
+          chainId?: number;
+        };
+      };
+    };
+  };
+  childRequests?: RelayRequestApiRecord[];
+}
+
+interface RelayRequestsResponse {
+  requests?: RelayRequestApiRecord[];
+}
+
+function mapRelayRequest(request: RelayRequestApiRecord): RelayRequestMetadata | null {
+  if (!request.depositAddress?.address) {
+    return null;
+  }
+
+  return {
+    requestId: request.id,
+    status: request.status,
+    depositAddress: {
+      address: request.depositAddress.address,
+      depositAddressType: request.depositAddress.depositAddressType,
+      depositTxHash: request.depositAddress.depositTxHash,
+    },
+    protocolOrderId: request.protocol?.v2?.orderId,
+    originChainId: request.originChainId ?? request.data?.metadata?.currencyIn?.currency?.chainId,
+    destinationChainId: request.destinationChainId ?? request.data?.metadata?.currencyOut?.currency?.chainId,
+    childRequests: request.childRequests?.map(mapRelayRequest).filter((child): child is NonNullable<ReturnType<typeof mapRelayRequest>> => child !== null),
+  };
+}
+
+async function fetchDepositAddressMatches(address: string): Promise<AddressMatch[]> {
+  const response = await relayApiClient.get<RelayRequestsResponse>('/requests/v2', {
+    params: {
+      depositAddress: address,
+      includeChildRequests: true,
+    },
+  });
+
+  return (response.data.requests ?? [])
+    .map((request) => mapRelayRequest(request))
+    .filter((request): request is NonNullable<ReturnType<typeof mapRelayRequest>> => request !== null)
+    .filter((request) => requestAddressesMatch(request.depositAddress.address, address))
+    .map((request) => ({
+      matchType: 'deposit-address' as const,
+      address: request.depositAddress.address,
+      request,
+    }));
 }
 
 /**
@@ -137,7 +225,24 @@ function detectAddressInChains(address: string, chains: RelayChain[]): Detection
 
 export async function detectRelayAddress(address: string): Promise<DetectionResult> {
   const chains = await fetchChains();
-  return detectAddressInChains(address, chains);
+  let depositAddressLookupUnavailable = false;
+  let depositAddressMatches: AddressMatch[] = [];
+
+  try {
+    depositAddressMatches = await fetchDepositAddressMatches(address);
+  } catch (error) {
+    depositAddressLookupUnavailable = true;
+    console.warn('Relay deposit address lookup failed:', error);
+  }
+
+  const chainResult = detectAddressInChains(address, chains);
+
+  return {
+    ...chainResult,
+    isRelay: chainResult.matches.length + depositAddressMatches.length > 0,
+    matches: [...chainResult.matches, ...depositAddressMatches],
+    depositAddressLookupUnavailable,
+  };
 }
 
 /**
@@ -188,10 +293,28 @@ export async function detectMultipleAddresses(addresses: string[]): Promise<Batc
   }
   
   // Detect valid addresses using the same chains data
+  const depositAddressMatchesByAddress = await Promise.all(
+    validAddresses.map(async (address) => {
+      try {
+        return await fetchDepositAddressMatches(address);
+      } catch (error) {
+        console.warn(`Relay deposit address lookup failed for ${address}:`, error);
+        return null;
+      }
+    })
+  );
+
   const results: DetectionResult[] = [];
-  for (const address of validAddresses) {
-    const result = detectAddressInChains(address, chains);
-    results.push(result);
+  for (const [index, address] of validAddresses.entries()) {
+    const chainResult = detectAddressInChains(address, chains);
+    const depositAddressMatches = depositAddressMatchesByAddress[index] ?? [];
+
+    results.push({
+      ...chainResult,
+      isRelay: chainResult.matches.length + depositAddressMatches.length > 0,
+      matches: [...chainResult.matches, ...depositAddressMatches],
+      depositAddressLookupUnavailable: depositAddressMatchesByAddress[index] === null,
+    });
   }
   
   return {

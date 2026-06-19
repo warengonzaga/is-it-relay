@@ -1,16 +1,16 @@
 # Is It Relay?
 
-A web app to detect if an address is part of [Relay Protocol](https://relay.link) infrastructure. Checks solver addresses, depository contracts, and protocol contracts across all supported chains.
+A web app to detect if an address is part of [Relay Protocol](https://relay.link) infrastructure or a Relay deposit-address request. Checks solver addresses, depository contracts, protocol contracts, and matching deposit-address records across all supported chains.
 
 [![Deploy to GitHub Pages](https://github.com/warengonzaga/is-it-relay/actions/workflows/deploy.yml/badge.svg)](https://github.com/warengonzaga/is-it-relay/actions/workflows/deploy.yml)
 
 ## Features
 
-- **Address Detection** — Identifies solver addresses, depository contracts, and protocol contracts (multicall, routers, receivers, etc.) from the Relay Protocol API.
+- **Address Detection** — Identifies solver addresses, depository contracts, protocol contracts (multicall, routers, receivers, etc.), and Relay deposit-address requests from the Relay Protocol API.
 - **Batch Processing** — Check multiple addresses at once by pasting comma, newline, or space-separated lists.
 - **Multi-chain Support** — Scans across all chains returned by the `/chains` endpoint.
 - **EVM, SVM & BTC** — Supports EVM (`0x...`), Solana (base58), and Bitcoin (Legacy, SegWit, Taproot) addresses.
-- **Detection Summary** — Shows match type (solver, depository, contract) with per-chain breakdown.
+- **Detection Summary** — Shows match type (solver, depository, contract, deposit address) with per-chain and per-request breakdown.
 - **Collapsible Chain Lists** — Matches grouped by type with expandable details.
 - **Block Explorer Links** — Direct links to view the address on each chain's explorer.
 - **Shareable URLs** — Results are linkable via `?address=` query parameter.
@@ -42,6 +42,8 @@ cd is-it-relay
 pnpm install
 ```
 
+Optional: set `VITE_RELAY_API_KEY` in your environment for higher Relay API rate limits when checking deposit-address requests.
+
 ### Development
 
 ```bash
@@ -64,13 +66,14 @@ pnpm preview
 
 1. User enters one or multiple EVM, Solana, or Bitcoin addresses (comma, newline, or space-separated).
 2. The app fetches all chains from `https://api.relay.link/chains`.
-3. For each chain, it checks:
+3. It also queries `https://api.relay.link/requests/v2?depositAddress=<address>&includeChildRequests=true` to detect Relay deposit-address requests.
+4. For each chain, it checks:
    - `solverAddresses[]` — solver addresses
    - `protocol.v2.depository` — v2 depository contract address
    - `contracts.*` — protocol contracts (multicall3, erc20Router, relayReceiver, etc.)
-4. Matching uses case-insensitive comparison for EVM and exact match for SVM/BTC (base58/bech32 is case-sensitive).
-5. Results display the match type, matched chains, and explorer links.
-6. For batch processing, results are organized by Relay and Non-Relay addresses with summary statistics.
+5. Matching uses case-insensitive comparison for EVM and exact match for SVM/BTC (base58/bech32 is case-sensitive).
+6. Results display the match type, matched chains, deposit-request metadata, and explorer links.
+7. For batch processing, results are organized by detected and non-detected addresses with summary statistics.
 
 ## Project Structure
 
