@@ -113,7 +113,7 @@ export default function DetectionResult({ result, onReset, showResetButton = tru
     if (solverMatches.length > 0) types.push('Solver');
     if (depositoryMatches.length > 0) types.push('Depository');
     if (contractMatches.length > 0) types.push('Contract');
-    if (depositAddressMatches.length > 0) types.push('Deposit Address');
+    if (depositAddressMatches.length > 0) types.push('Deposit');
     return `Relay Protocol ${types.join(' & ')} Address`;
   };
 
