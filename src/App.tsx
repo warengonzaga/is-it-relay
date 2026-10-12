@@ -24,12 +24,22 @@ export default function App() {
             Relay API changes ended sustainable public read-only access. This site no longer checks live addresses;
             it remains online as a demo.
           </p>
-          <a
-            href="https://github.com/warengonzaga/is-it-relay#project-status"
-            className="mt-2 inline-block font-medium underline underline-offset-4 hover:text-white"
-          >
-            Read the project notice
-          </a>
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+            <a
+              href="https://github.com/warengonzaga/is-it-relay#project-status"
+              className="font-medium underline underline-offset-4 hover:text-white"
+            >
+              Read the project notice
+            </a>
+            <a
+              href="https://docs.relay.link/references/api/api_guides/migrating-to-requests-v3"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium underline underline-offset-4 hover:text-white"
+            >
+              Read Relay's API migration guide
+            </a>
+          </div>
         </aside>
 
         <Card className="border-border/50 shadow-2xl">
