@@ -1,146 +1,59 @@
-import { useState, useEffect } from 'react';
-import AddressInput from '@/components/AddressInput';
-import DetectionResult from '@/components/DetectionResult';
-import BatchDetectionResult from '@/components/BatchDetectionResult';
 import IsItRelayLogo from '@/components/IsItRelayLogo';
 import Footer from '@/components/Footer';
-import FAQ from '@/components/FAQ';
-import { detectRelayAddress, detectMultipleAddresses } from '@/services/relayApi';
-import type { DetectionResult as DetectionResultType, BatchDetectionResult as BatchDetectionResultType } from '@/types/relay';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-function App() {
-  const [result, setResult] = useState<DetectionResultType | null>(null);
-  const [batchResult, setBatchResult] = useState<BatchDetectionResultType | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Check URL params on mount
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const address = params.get('address');
-    if (address) {
-      handleDetect(address);
-    }
-  }, []);
-
-  const handleDetect = async (address: string) => {
-    setIsLoading(true);
-    setError(null);
-    setResult(null);
-    setBatchResult(null);
-
-    // Update URL
-    const url = new URL(window.location.href);
-    url.searchParams.set('address', address);
-    window.history.replaceState({}, '', url.toString());
-
-    try {
-      const detectionResult = await detectRelayAddress(address);
-      setResult(detectionResult);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to check address. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDetectMultiple = async (addresses: string[]) => {
-    setIsLoading(true);
-    setError(null);
-    setResult(null);
-    setBatchResult(null);
-
-    // Clear URL params for batch detection
-    const url = new URL(window.location.href);
-    url.searchParams.delete('address');
-    window.history.replaceState({}, '', url.toString());
-
-    try {
-      const batchDetectionResult = await detectMultipleAddresses(addresses);
-      setBatchResult(batchDetectionResult);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to check addresses. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleReset = () => {
-    setResult(null);
-    setBatchResult(null);
-    setError(null);
-
-    // Clear URL params
-    const url = new URL(window.location.href);
-    url.searchParams.delete('address');
-    window.history.replaceState({}, '', url.toString());
-  };
-
+export default function App() {
   return (
     <div className="dark min-h-screen bg-background text-foreground flex flex-col">
-      <div className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-12">
-        {/* Header */}
-        <header className="text-center mb-8 sm:mb-10">
-          <div className="flex items-center justify-center mb-4">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-12">
+        <header className="mb-8 text-center sm:mb-10">
+          <div className="mb-4 flex items-center justify-center">
             <IsItRelayLogo className="h-10 sm:h-12 md:h-14" />
           </div>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto">
-            Detect if an address is part of Relay Protocol infrastructure or a Relay deposit-address request
+          <p className="mx-auto max-w-md text-sm text-muted-foreground sm:text-base">
+            Relay Protocol address detector, preserved as a static demo
           </p>
         </header>
 
-        {/* Main Content */}
-        {!result && !batchResult && (
-          <AddressInput onDetect={handleDetect} onDetectMultiple={handleDetectMultiple} isLoading={isLoading} />
-        )}
+        <aside
+          aria-label="Project status"
+          className="mb-8 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-4 text-sm text-amber-100"
+        >
+          <p className="font-semibold">Project discontinued</p>
+          <p className="mt-1">
+            Relay API changes ended sustainable public read-only access. This site no longer checks live addresses;
+            it remains online as a demo.
+          </p>
+          <a
+            href="https://github.com/warengonzaga/is-it-relay#project-status"
+            className="mt-2 inline-block font-medium underline underline-offset-4 hover:text-white"
+          >
+            Read the project notice
+          </a>
+        </aside>
 
-        {/* Loading State */}
-        {isLoading && (
-          <div className="w-full mx-auto">
-            <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-background border rounded-lg p-4 sm:p-6 animate-in zoom-in-95 fade-in duration-300">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden flex-shrink-0 bg-muted animate-pulse">
-                  <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5" />
-                </div>
-                <div className="flex-1 min-w-0 space-y-2">
-                  <div className="h-4 sm:h-5 bg-muted rounded animate-pulse w-48 max-w-full" />
-                  <div className="h-3 sm:h-4 bg-muted/50 rounded animate-pulse w-64 max-w-full" />
-                </div>
-              </div>
+        <Card className="border-border/50 shadow-2xl">
+          <CardHeader>
+            <CardTitle className="text-xl sm:text-2xl">Example detection result</CardTitle>
+            <CardDescription>
+              A static preview of the former address-detection interface. No Relay API requests are made.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-lg border border-primary/30 bg-primary/5 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-primary">Illustrative sample</p>
+              <p className="mt-2 font-mono text-sm text-foreground">0x71c765...d8976f</p>
+              <p className="mt-3 text-sm font-medium">Example protocol contract match</p>
+              <p className="mt-1 text-sm text-muted-foreground">Example EVM chain · Contract category</p>
             </div>
-          </div>
-        )}
-
-        {/* Error State */}
-        {error && (
-          <div className="mt-4 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
-            <p className="text-sm text-destructive">{error}</p>
-            <button
-              onClick={handleReset}
-              className="mt-2 text-xs text-destructive hover:underline"
-            >
-              Try again
-            </button>
-          </div>
-        )}
-
-        {/* Result */}
-        {result && !isLoading && (
-          <DetectionResult result={result} onReset={handleReset} />
-        )}
-
-        {/* Batch Result */}
-        {batchResult && !isLoading && (
-          <BatchDetectionResult batchResult={batchResult} onReset={handleReset} />
-        )}
-
-        {/* FAQ - shown only when not loading and no result */}
-        {!isLoading && !result && !batchResult && <FAQ />}
-
-      </div>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              The address and match above are fictional demo content. They do not represent a verified Relay address
+              or current protocol data.
+            </p>
+          </CardContent>
+        </Card>
+      </main>
       <Footer />
     </div>
   );
 }
-
-export default App;
